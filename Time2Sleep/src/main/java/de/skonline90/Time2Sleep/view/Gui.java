@@ -57,7 +57,7 @@ public final class Gui extends JFrame
     private static final long serialVersionUID = 1L;
 
     private static final String GUI_TITLE = "Time2Sleep";
-    private static final String GUI_VERSION = "0.0.1";
+    private static final String GUI_VERSION = "1.0.0";
     private static final String TIME_FORMAT = ApplicationProperties.TIME_FORMAT;
 
     private JComboBox<String> cBoxSettingSelector;
@@ -680,6 +680,9 @@ public final class Gui extends JFrame
         countdownTimer.schedule(countdownTimerTask, 0, 1000);
     }
 
+    /**
+     * Cancels the main countdown.
+     */
     private void cancelCountdownTimer()
     {
         countdownTimer.cancel();
