@@ -24,4 +24,10 @@ final public class Dialogs
 
         return choice;
     }
+
+    public static void showIoErrorDialog(Container parent)
+    {
+        JOptionPane.showMessageDialog(parent, "An IO Error occured.",
+                "IO Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

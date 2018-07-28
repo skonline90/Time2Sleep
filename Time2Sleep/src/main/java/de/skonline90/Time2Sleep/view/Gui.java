@@ -7,6 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -30,6 +31,7 @@ import javax.swing.SwingConstants;
 import javax.swing.text.DateFormatter;
 
 import de.skonline90.Time2Sleep.controller.CurrentTime;
+import de.skonline90.Time2Sleep.controller.MachineCommandManager;
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 
 public final class Gui extends JFrame implements Runnable
@@ -60,11 +62,14 @@ public final class Gui extends JFrame implements Runnable
     private TimerTask currentTimeTimerTask;
     private TimerTask countdownTimerTask;
     private long countDownSeconds;
+    private MachineCommandManager machineCommandManager;
 
     // =============== START CONSTRUCTOR & INIT METHODS ===============
 
     public Gui()
     {
+        machineCommandManager = new MachineCommandManager();
+
         setLayout();
         initMenu();
         initComboBox();
@@ -299,6 +304,7 @@ public final class Gui extends JFrame implements Runnable
 
     private void startCountdown()
     {
+        Gui gui = this;
         countdownTimerTask = new TimerTask()
         {
             @Override
@@ -313,21 +319,23 @@ public final class Gui extends JFrame implements Runnable
                 }
                 else
                 {
-                    //sleeps computer
                     lblBigCountdown.setText(setCountdownTimer(0));
                     btnStart.setEnabled(true);
                     btnAbort.setEnabled(false);
-                    System.out.println("BOOM");
-                    //                    try
-                    //                    {
-                    //                        Runtime.getRuntime().exec("rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
-                    //                    }
-                    //                    catch (IOException e)
-                    //                    {
-                    //                        // TODO Auto-generated catch block
-                    //                        e.printStackTrace();
-                    //                    }
                     countdownTimerTask.cancel();
+                    String selectedSetting = ((cBoxSettingSelector
+                        .getSelectedItem()).toString()).toLowerCase();
+                    try
+                    {
+                        System.out.println(selectedSetting);
+                        machineCommandManager
+                            .sendMachineCommand(selectedSetting);
+                    }
+                    catch (IOException e)
+                    {
+                        Dialogs.showIoErrorDialog(gui);
+                        e.printStackTrace();
+                    }
                 }
             }
         };
