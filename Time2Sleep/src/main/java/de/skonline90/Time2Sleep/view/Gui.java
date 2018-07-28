@@ -1,6 +1,7 @@
 package de.skonline90.Time2Sleep.view;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
@@ -8,10 +9,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Timer;
@@ -19,6 +23,7 @@ import java.util.TimerTask;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -31,12 +36,10 @@ import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 import javax.swing.text.DateFormatter;
 
-import de.skonline90.Time2Sleep.controller.TimeManager;
 import de.skonline90.Time2Sleep.controller.GuiStates;
 import de.skonline90.Time2Sleep.controller.MachineCommandManager;
+import de.skonline90.Time2Sleep.controller.TimeManager;
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
-import javax.swing.JTextField;
-import java.awt.Font;
 
 public final class Gui extends JFrame
 {
@@ -65,7 +68,7 @@ public final class Gui extends JFrame
     private JButton btnMinus;
 
     private JSpinner spnTimeSelector;
-    private JTextField txtFldAmount;
+    private JFormattedTextField txtFldAmount;
 
     private TimerTask currentTimeTimerTask;
     private TimerTask countdownTimerTask;
@@ -108,7 +111,7 @@ public final class Gui extends JFrame
         int x = (screenWidth / 2) - (frameWidth / 2);
         int y = (screenHeight / 2) - (frameHeight / 2);
         setBounds(new Rectangle(x, y, frameWidth, frameHeight));
-        //        setResizable(false);
+        setResizable(false);
     }
 
     private void initMenu()
@@ -159,9 +162,18 @@ public final class Gui extends JFrame
 
     private void initTextField()
     {
-        txtFldAmount = new JTextField();
+        SimpleDateFormat formatter = new SimpleDateFormat(
+                ApplicationProperties.TIME_FORMAT);
+        txtFldAmount = new JFormattedTextField(formatter);
         txtFldAmount.setBounds(81, 138, 86, 20);
+        txtFldAmount.setHorizontalAlignment(SwingConstants.CENTER);
         getContentPane().add(txtFldAmount);
+        LocalDateTime now = LocalDateTime.of(LocalDate.now(),
+                LocalTime.of(0, 0, 10));
+        ZonedDateTime atZone = now.atZone(ZoneId.systemDefault());
+        Date date = Date.from(atZone.toInstant());
+        txtFldAmount.setValue(date);
+
         txtFldAmount.setColumns(10);
     }
 
@@ -205,6 +217,68 @@ public final class Gui extends JFrame
             setGuiToState(guiState);
 
             startCountdown();
+        });
+
+        btnPlus.addActionListener(e -> {
+            if (guiState == GuiStates.RUNNING)
+            {
+                Date timeObject = (Date) txtFldAmount.getValue();
+                LocalTime userTimeIncrement = LocalDateTime
+                    .ofInstant(timeObject.toInstant(), ZoneId.systemDefault())
+                    .toLocalTime();
+                String currenTimeLeft = lblBigCountdown.getText();
+                DateTimeFormatter formatter = DateTimeFormatter
+                    .ofPattern(ApplicationProperties.TIME_FORMAT);
+                LocalTime parsedTime = LocalTime.parse(currenTimeLeft,
+                        formatter);
+                Duration duration = Duration
+                    .ofSeconds(userTimeIncrement.getHour() * 3600
+                            + userTimeIncrement.getMinute() * 60
+                            + userTimeIncrement.getSecond());
+
+                long totalSecondsInParsedTimeAndDuration = parsedTime.getHour()
+                        * 3600 + parsedTime.getMinute() * 60
+                        + parsedTime.getSecond() + duration.getSeconds();
+                int maxSecondsInFullTimer = 23 * 3600 + 59 * 60 + 59;
+                if (totalSecondsInParsedTimeAndDuration <= maxSecondsInFullTimer)
+                {
+                    LocalTime incrementedTime = parsedTime.plus(duration);
+                    lblBigCountdown.setText(formatter.format(incrementedTime));
+                    countDownSeconds = incrementedTime.getSecond()
+                            + incrementedTime.getMinute() * 60
+                            + incrementedTime.getHour() * 3600;
+                }
+            }
+        });
+
+        btnMinus.addActionListener(e -> {
+            if (guiState == GuiStates.RUNNING)
+            {
+                Date timeObject = (Date) txtFldAmount.getValue();
+                LocalTime userTimeIncrement = LocalDateTime
+                    .ofInstant(timeObject.toInstant(), ZoneId.systemDefault())
+                    .toLocalTime();
+                String currenTimeLeft = lblBigCountdown.getText();
+                DateTimeFormatter formatter = DateTimeFormatter
+                    .ofPattern(ApplicationProperties.TIME_FORMAT);
+                LocalTime parsedTime = LocalTime.parse(currenTimeLeft,
+                        formatter);
+                Duration duration = Duration
+                    .ofSeconds(userTimeIncrement.getHour() * 3600
+                            + userTimeIncrement.getMinute() * 60
+                            + userTimeIncrement.getSecond());
+
+                int totalSecondsInParsedTime = parsedTime.getHour() * 3600
+                        + parsedTime.getMinute() * 60 + parsedTime.getSecond();
+                if (totalSecondsInParsedTime > duration.getSeconds())
+                {
+                    LocalTime decrementedTime = parsedTime.minus(duration);
+                    lblBigCountdown.setText(formatter.format(decrementedTime));
+                    countDownSeconds = decrementedTime.getSecond()
+                            + decrementedTime.getMinute() * 60
+                            + decrementedTime.getHour() * 3600;
+                }
+            }
         });
     }
 
