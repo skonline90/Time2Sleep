@@ -3,13 +3,15 @@ package de.skonline90.Time2Sleep.view;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Date;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.SpinnerDateModel;
@@ -57,6 +60,8 @@ public final class Gui extends JFrame implements Runnable
     private TimerTask currentTimeTimerTask;
     private TimerTask countdownTimerTask;
     private long countDownSeconds;
+
+    // =============== START CONSTRUCTOR & INIT METHODS ===============
 
     public Gui()
     {
@@ -120,6 +125,7 @@ public final class Gui extends JFrame implements Runnable
     {
         btnAbort = new JButton("Abort");
         btnAbort.setBounds(84, 239, 76, 23);
+        btnAbort.setEnabled(false);
         getContentPane().add(btnAbort);
 
         btnStart = new JButton("Start");
@@ -129,24 +135,40 @@ public final class Gui extends JFrame implements Runnable
 
     private void addActionListeners()
     {
-        final JFrame gui = this;
         addWindowListener(new WindowAdapter()
         {
             @Override
             public void windowClosing(WindowEvent windowEvent)
             {
+                if (countDownSeconds > 0) countdownTimerTask.cancel();
                 close();
             }
         });
 
         mnitmQuit.addActionListener(e -> close());
+
         btnAbort.addActionListener(e -> {
-            countdownTimerTask.cancel();
+            btnStart.setEnabled(true);
+            btnAbort.setEnabled(false);
+            if (countDownSeconds > 0) countdownTimerTask.cancel();
             countDownSeconds = 0;
             lblBigCountdown.setText(setCountdownTimer(0));
         });
+
         btnStart.addActionListener(e -> {
             setInitialCountdownTimer();
+
+            int choice = -5000;
+            if (countDownSeconds == 0)
+            {
+                choice = Dialogs.showZeroCountdownTimeDialog(this);
+                if (choice == JOptionPane.NO_OPTION)
+                {
+                    return;
+                }
+            }
+            btnStart.setEnabled(false);
+            btnAbort.setEnabled(true);
             startCountdown();
         });
     }
@@ -195,7 +217,22 @@ public final class Gui extends JFrame implements Runnable
         // Sets the initial value on 00:00:00
         Date date = new Date(-60 * 60 * 1000);
         spnTimeSelector.setValue(date);
+
+        spnTimeSelector.addKeyListener(new KeyAdapter()
+        {
+            @Override
+            public void keyReleased(final KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    System.out.println("Enter");
+                    btnStart.doClick();
+                }
+            }
+        });
     }
+
+    // =============== END CONSTRUCTOR & INIT METHODS ===============
 
     private void startCurrentTimeThread()
     {
@@ -222,7 +259,7 @@ public final class Gui extends JFrame implements Runnable
     private void close()
     {
         currentTimeTimerTask.cancel();
-        countdownTimerTask.cancel();
+        if (countDownSeconds > 0) countdownTimerTask.cancel();
         dispose();
         System.exit(0);
     }
@@ -267,7 +304,7 @@ public final class Gui extends JFrame implements Runnable
             @Override
             public void run()
             {
-                if (countDownSeconds >= 0)
+                if (countDownSeconds > 0)
                 {
                     String countDownAsText = setCountdownTimer(
                             (int) countDownSeconds);
@@ -276,6 +313,20 @@ public final class Gui extends JFrame implements Runnable
                 }
                 else
                 {
+                    //sleeps computer
+                    lblBigCountdown.setText(setCountdownTimer(0));
+                    btnStart.setEnabled(true);
+                    btnAbort.setEnabled(false);
+                    System.out.println("BOOM");
+                    //                    try
+                    //                    {
+                    //                        Runtime.getRuntime().exec("rundll32.exe powrprof.dll,SetSuspendState 0,1,0");
+                    //                    }
+                    //                    catch (IOException e)
+                    //                    {
+                    //                        // TODO Auto-generated catch block
+                    //                        e.printStackTrace();
+                    //                    }
                     countdownTimerTask.cancel();
                 }
             }
