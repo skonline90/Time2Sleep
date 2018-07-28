@@ -1,8 +1,17 @@
 package de.skonline90.Time2Sleep.view;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Date;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -12,16 +21,28 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSpinner;
+import javax.swing.JSpinner.DateEditor;
+import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
+import javax.swing.text.DateFormatter;
 
-public final class Gui extends JFrame
+import de.skonline90.Time2Sleep.controller.CurrentTime;
+import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
+
+public final class Gui extends JFrame implements Runnable
 {
     private static final long serialVersionUID = 1L;
 
     private static final String GUI_TITLE = "Time2Sleep";
     private static final String GUI_VERSION = "0.0.1";
+    private static final String TIME_FORMAT = ApplicationProperties.TIME_FORMAT;
 
     private JComboBox<String> cBoxSettingSelector;
+
+    private JMenuBar menuBar;
+    private JMenu mnFile;
+    private JMenu mnLanguage;
+    private JMenuItem mnitmQuit;
 
     private JLabel lblBigCountdown;
     private JLabel lblCurrentTimeText;
@@ -33,6 +54,10 @@ public final class Gui extends JFrame
 
     private JSpinner spnTimeSelector;
 
+    private TimerTask currentTimeTimerTask;
+    private TimerTask countdownTimerTask;
+    private long countDownSeconds;
+
     public Gui()
     {
         setLayout();
@@ -42,35 +67,52 @@ public final class Gui extends JFrame
         initButtons();
         addActionListeners();
         initSpinner();
+        startCurrentTimeThread();
         setFrameProperties();
     }
 
     private void setLayout()
     {
         getContentPane().setLayout(null);
-        setBounds(new Rectangle(0, 0, 267, 330));
+
+        // Centers the Frame
+        int frameWidth = 267;
+        int frameHeight = 330;
+        Dimension screenSize = Toolkit.getDefaultToolkit()
+            .getScreenSize();
+        int screenWidth = (int) Math.round(screenSize.getWidth());
+        int screenHeight = (int) Math.round(screenSize.getHeight());
+        int x = (screenWidth / 2) - (frameWidth / 2);
+        int y = (screenHeight / 2) - (frameHeight / 2);
+        setBounds(new Rectangle(x, y, frameWidth, frameHeight));
     }
 
     private void initMenu()
     {
-        JMenuBar menuBar = new JMenuBar();
+        menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu mnFile = new JMenu("File");
+        mnFile = new JMenu("File");
         menuBar.add(mnFile);
 
-        JMenuItem mntmQuit = new JMenuItem("Quit");
-        mnFile.add(mntmQuit);
-
-        JMenu mnLanguage = new JMenu("Language");
+        mnLanguage = new JMenu("Language");
         menuBar.add(mnLanguage);
 
+        mnitmQuit = new JMenuItem("Quit");
+        mnFile.add(mnitmQuit);
     }
 
     private void initComboBox()
     {
+        final String[] cboxItems = new String[] {"Shutdown", "Sleep", "Lock",
+                "Restart"};
+
         cBoxSettingSelector = new JComboBox<String>();
         cBoxSettingSelector.setBounds(10, 11, 234, 20);
+        for (String item : cboxItems)
+        {
+            cBoxSettingSelector.addItem(item);
+        }
         getContentPane().add(cBoxSettingSelector);
     }
 
@@ -87,20 +129,25 @@ public final class Gui extends JFrame
 
     private void addActionListeners()
     {
-        btnAbort.addActionListener(new ActionListener()
+        final JFrame gui = this;
+        addWindowListener(new WindowAdapter()
         {
-            public void actionPerformed(ActionEvent e)
+            @Override
+            public void windowClosing(WindowEvent windowEvent)
             {
-
+                close();
             }
         });
 
-        btnStart.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-
-            }
+        mnitmQuit.addActionListener(e -> close());
+        btnAbort.addActionListener(e -> {
+            countdownTimerTask.cancel();
+            countDownSeconds = 0;
+            lblBigCountdown.setText(setCountdownTimer(0));
+        });
+        btnStart.addActionListener(e -> {
+            setInitialCountdownTimer();
+            startCountdown();
         });
     }
 
@@ -117,7 +164,8 @@ public final class Gui extends JFrame
         lblCurrentTimeText.setBounds(10, 138, 120, 20);
         getContentPane().add(lblCurrentTimeText);
 
-        lblCurrentTimeValue = new JLabel("23:22:11");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(TIME_FORMAT);
+        lblCurrentTimeValue = new JLabel(formatter.format(LocalTime.now()));
         lblCurrentTimeValue.setHorizontalAlignment(SwingConstants.RIGHT);
         lblCurrentTimeValue.setFont(UiProperties.UI_BASIC_TEXT_FONT);
         lblCurrentTimeValue.setBounds(140, 138, 104, 20);
@@ -131,15 +179,114 @@ public final class Gui extends JFrame
 
     private void initSpinner()
     {
+        SpinnerDateModel spinnerModel = new SpinnerDateModel();
+
         spnTimeSelector = new JSpinner();
         spnTimeSelector.setBounds(140, 169, 104, 20);
+        spnTimeSelector.setModel(spinnerModel);
         getContentPane().add(spnTimeSelector);
+
+        DateEditor editor = new DateEditor(spnTimeSelector, TIME_FORMAT);
+        DateFormatter formatter = (DateFormatter) editor.getTextField()
+            .getFormatter();
+        spnTimeSelector.setEditor(editor);
+        formatter.setAllowsInvalid(false);
+        formatter.setOverwriteMode(true);
+        // Sets the initial value on 00:00:00
+        Date date = new Date(-60 * 60 * 1000);
+        spnTimeSelector.setValue(date);
+    }
+
+    private void startCurrentTimeThread()
+    {
+        currentTimeTimerTask = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                lblCurrentTimeValue
+                    .setText(CurrentTime.displayFormattedCurrentTime());
+            }
+        };
+        Timer timer = new Timer();
+        timer.schedule(currentTimeTimerTask, 0, 1000);
     }
 
     private void setFrameProperties()
     {
         setVisible(true);
         setTitle(GUI_TITLE + " " + GUI_VERSION);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    }
+
+    private void close()
+    {
+        currentTimeTimerTask.cancel();
+        countdownTimerTask.cancel();
+        dispose();
+        System.exit(0);
+    }
+
+    private int getUserInputCountdownInSeconds()
+    {
+        Date value = (Date) spnTimeSelector.getValue();
+        LocalTime time = value.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalTime();
+        int hour = time.getHour();
+        int minute = time.getMinute();
+        int second = time.getSecond();
+        return ((hour * 3600) + (minute * 60) + second);
+    }
+
+    private void setInitialCountdownTimer()
+    {
+        countDownSeconds = getUserInputCountdownInSeconds();
+    }
+
+    private String setCountdownTimer(int secs)
+    {
+        //        int seconds = secs;
+        //        int hours = (seconds / 3600);
+        //        seconds = seconds % 3600;
+        //        int minutes = (seconds / 60);
+        //        seconds = seconds % 60;
+
+        Duration duration = Duration.ofSeconds(secs);
+        LocalTime time = LocalTime.MIDNIGHT;
+        return LocalTime.MIDNIGHT.plus(duration)
+            .format(DateTimeFormatter
+                .ofPattern(ApplicationProperties.TIME_FORMAT));
+
+    }
+
+    private void startCountdown()
+    {
+        countdownTimerTask = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                if (countDownSeconds >= 0)
+                {
+                    String countDownAsText = setCountdownTimer(
+                            (int) countDownSeconds);
+                    lblBigCountdown.setText(countDownAsText);
+                    countDownSeconds--;
+                }
+                else
+                {
+                    countdownTimerTask.cancel();
+                }
+            }
+        };
+        Timer countdownTimer = new Timer();
+        countdownTimer.schedule(countdownTimerTask, 0, 1000);
+    }
+
+    @Override
+    public void run()
+    {
+
     }
 }
