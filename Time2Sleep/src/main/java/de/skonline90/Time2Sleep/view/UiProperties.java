@@ -2,6 +2,12 @@ package de.skonline90.Time2Sleep.view;
 
 import java.awt.Font;
 
+/**
+ * This interface offers constants with reoccuring UI properties.
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 public interface UiProperties
 {
     /*

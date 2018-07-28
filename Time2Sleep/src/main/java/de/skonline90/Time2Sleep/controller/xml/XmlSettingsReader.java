@@ -16,8 +16,23 @@ import org.xml.sax.SAXException;
 
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 
+/**
+ * This class reads the settings file and returns its contents.
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 public class XmlSettingsReader
 {
+    /**
+     * Reads the settings.xml file and returns its contents.
+     * 
+     * @return The default settings as a list of string arrays. Each array
+     * contains two elements.
+     * @throws ParserConfigurationException If the settings file is corrupted.
+     * @throws SAXException If the settings file is corrupted.
+     * @throws IOException If IO Error occurs.
+     */
     public static List<String[]> loadDefaultSettings()
             throws ParserConfigurationException, SAXException, IOException
     {

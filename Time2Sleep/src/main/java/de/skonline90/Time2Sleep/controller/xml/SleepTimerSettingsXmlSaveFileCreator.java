@@ -18,12 +18,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Diese Klasse speichert Detektor Messergebnisse in Form einer XML Datei.
- * In dieser werden Startparameter, Messdetails und die einzellnen Messwerte
- * gespeichert.
+ * This class creates the settings.xml file. It saves
+ * the settings on the GUI.
  * 
- * @author Simon Kirsanov
- * @version 25.05.2018
+ * @author skonline90
+ * @version 28.07.18
  */
 public class SleepTimerSettingsXmlSaveFileCreator
 {

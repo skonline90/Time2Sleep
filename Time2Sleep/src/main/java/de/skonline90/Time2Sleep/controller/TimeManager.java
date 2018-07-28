@@ -6,8 +6,17 @@ import java.time.format.DateTimeFormatter;
 
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 
+/**
+ * This class offers methods to create strings of time.
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 public class TimeManager
 {
+    /**
+     * Returns the current time as a string.
+     */
     public static String displayFormattedCurrentTime()
     {
         LocalTime now = LocalTime.now();
@@ -16,6 +25,10 @@ public class TimeManager
         return now.format(formatter);
     }
 
+    /**
+     * Returns the actiontime. It is calculated by adding the
+     * input time to the current time.
+     */
     public static String displayActionTime(LocalTime time)
     {
         LocalTime now = LocalTime.now();

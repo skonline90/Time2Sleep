@@ -2,15 +2,32 @@ package de.skonline90.Time2Sleep.controller;
 
 import java.io.IOException;
 
+/**
+ * This class offers a method to send certain commands to 
+ * the PC (fe. Shutdown command).
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 public class MachineCommandManager
 {
     private String osName;
 
+    /**
+     * Constructor.
+     */
     public MachineCommandManager()
     {
         osName = System.getProperty("os.name");
     }
 
+    /**
+     * Sends a shutdown, sleep, lock or restart command to the
+     * computer.
+     * 
+     * @param command String: shutdown, sleep, lock, restart
+     * @throws IOException If IO Error occures.
+     */
     public void sendMachineCommand(String command) throws IOException
     {
         if (osName.matches("Windows([\\s\\w\"§$%&/\\(\\)])*"))

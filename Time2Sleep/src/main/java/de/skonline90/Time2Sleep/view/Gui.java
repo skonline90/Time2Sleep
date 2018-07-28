@@ -46,6 +46,12 @@ import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 import de.skonline90.Time2Sleep.controller.xml.SleepTimerSettingsXmlSaveFileCreator;
 import de.skonline90.Time2Sleep.controller.xml.XmlSettingsReader;
 
+/**
+ * The main application window.
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 public final class Gui extends JFrame
 {
     private static final long serialVersionUID = 1L;
@@ -83,6 +89,10 @@ public final class Gui extends JFrame
 
     // =============== START CONSTRUCTOR & INIT METHODS ===============
 
+    /**
+     * Constructor. Initializes all Swing elements, sets the layout and
+     * loads the settings.
+     */
     public Gui()
     {
         setLayout();
@@ -94,7 +104,7 @@ public final class Gui extends JFrame
         addActionListeners();
         initSpinner();
         loadDefaultSettings();
-        startCurrentTimeThread();
+        startTimeThread();
 
         machineCommandManager = new MachineCommandManager();
         guiState = GuiStates.INITIAL;
@@ -103,6 +113,9 @@ public final class Gui extends JFrame
         setFrameProperties();
     }
 
+    /**
+     * Sets the Layout of the Window.
+     */
     private void setLayout()
     {
         getContentPane().setLayout(null);
@@ -120,6 +133,9 @@ public final class Gui extends JFrame
         setResizable(false);
     }
 
+    /**
+     * Initializes the menu and its items.
+     */
     private void initMenu()
     {
         menuBar = new JMenuBar();
@@ -132,6 +148,9 @@ public final class Gui extends JFrame
         mnFile.add(mnitmQuit);
     }
 
+    /**
+     * Initializes the combo box element.
+     */
     private void initComboBox()
     {
         final String[] cboxItems = new String[] {"Shutdown", "Sleep", "Lock",
@@ -146,6 +165,9 @@ public final class Gui extends JFrame
         getContentPane().add(cBoxSettingSelector);
     }
 
+    /**
+     * Initializes all buttons.
+     */
     private void initButtons()
     {
         btnAbort = new JButton("Abort");
@@ -166,6 +188,9 @@ public final class Gui extends JFrame
 
     }
 
+    /**
+     * Initializes all textfields.
+     */
     private void initTextField()
     {
         SimpleDateFormat formatter = new SimpleDateFormat(
@@ -175,7 +200,7 @@ public final class Gui extends JFrame
         txtFldAmount.setHorizontalAlignment(SwingConstants.CENTER);
         getContentPane().add(txtFldAmount);
         LocalDateTime now = LocalDateTime.of(LocalDate.now(),
-                LocalTime.of(0, 0, 10));
+                LocalTime.of(0, 5, 0));
         ZonedDateTime atZone = now.atZone(ZoneId.systemDefault());
         Date date = Date.from(atZone.toInstant());
         txtFldAmount.setValue(date);
@@ -183,6 +208,9 @@ public final class Gui extends JFrame
         txtFldAmount.setColumns(10);
     }
 
+    /**
+     * Adds the ActionListeners for the buttons.
+     */
     private void addActionListeners()
     {
         addWindowListener(new WindowAdapter()
@@ -288,6 +316,9 @@ public final class Gui extends JFrame
         });
     }
 
+    /**
+     * Initializes the Labels.
+     */
     private void initLabels()
     {
         lblBigCountdown = new JLabel("00:00:00");
@@ -325,6 +356,9 @@ public final class Gui extends JFrame
         getContentPane().add(lblActionValue);
     }
 
+    /**
+     * Initializes the spinner.
+     */
     private void initSpinner()
     {
         SpinnerDateModel spinnerModel = new SpinnerDateModel();
@@ -358,6 +392,10 @@ public final class Gui extends JFrame
         });
     }
 
+    /**
+     * Loads the settings from the settings.xml file and
+     * updates the components with the loaded settings.
+     */
     private void loadDefaultSettings()
     {
         File settingsFile = new File(
@@ -432,8 +470,23 @@ public final class Gui extends JFrame
         }
     }
 
+    /**
+     * Sets the Frame properties.
+     */
+    private void setFrameProperties()
+    {
+        setVisible(true);
+        setTitle(GUI_TITLE + " " + GUI_VERSION);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    }
+
     // =============== END CONSTRUCTOR & INIT METHODS ===============
 
+    /**
+     * Sets the Gui elements according to the application state.
+     * 
+     * @param state The state the GUI is currently in.
+     */
     private void setGuiToState(GuiStates state)
     {
         if (state == GuiStates.INITIAL || state == GuiStates.ABORTED
@@ -457,7 +510,10 @@ public final class Gui extends JFrame
         }
     }
 
-    private void startCurrentTimeThread()
+    /**
+     * Starts the thread that updates the current time and the action time.
+     */
+    private void startTimeThread()
     {
         currentTimeTimerTask = new TimerTask()
         {
@@ -491,13 +547,9 @@ public final class Gui extends JFrame
         timer.schedule(currentTimeTimerTask, 0, 1000);
     }
 
-    private void setFrameProperties()
-    {
-        setVisible(true);
-        setTitle(GUI_TITLE + " " + GUI_VERSION);
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    }
-
+    /**
+     * Shuts down threads, saves the settings and shuts down the JVM.
+     */
     private void close()
     {
         saveSettings();
@@ -507,6 +559,9 @@ public final class Gui extends JFrame
         System.exit(0);
     }
 
+    /**
+     * Saves the user inputs to the settings.xml file.
+     */
     private void saveSettings()
     {
         try
@@ -541,6 +596,9 @@ public final class Gui extends JFrame
         }
     }
 
+    /**
+     * Converts the time in the spinner to seconds.
+     */
     private int getUserInputCountdownInSeconds()
     {
         Date value = (Date) spnTimeSelector.getValue();
@@ -553,6 +611,9 @@ public final class Gui extends JFrame
         return ((hour * 3600) + (minute * 60) + second);
     }
 
+    /**
+     * Sets the seconds variable to initial value.
+     */
     private void setInitialCountdownTimer()
     {
         countDownSeconds = getUserInputCountdownInSeconds();
@@ -566,6 +627,10 @@ public final class Gui extends JFrame
                 .ofPattern(ApplicationProperties.TIME_FORMAT));
     }
 
+    /**
+     * Starts the main countdown. The countdown runs until the time is at
+     * 00:00:00.
+     */
     private void startCountdown()
     {
         Gui gui = this;

@@ -4,17 +4,15 @@ import java.awt.Container;
 
 import javax.swing.JOptionPane;
 
+/**
+ * This class offers methods that open JOptionPanes. Each JOptionPane
+ * is a user information or error message.
+ * 
+ * @author skonline90
+ * @version 28.07.18
+ */
 final public class Dialogs
 {
-    public static int showExitDialog(Container parent)
-    {
-        int choice = JOptionPane.showConfirmDialog(parent,
-                "Do you really want to quit?", "Quit?",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
-        return choice;
-    }
-
     public static int showZeroCountdownTimeDialog(Container parent)
     {
         int choice = JOptionPane.showConfirmDialog(parent,
