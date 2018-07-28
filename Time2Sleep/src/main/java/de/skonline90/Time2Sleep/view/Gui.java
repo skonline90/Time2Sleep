@@ -100,6 +100,7 @@ public final class Gui extends JFrame
         int x = (screenWidth / 2) - (frameWidth / 2);
         int y = (screenHeight / 2) - (frameHeight / 2);
         setBounds(new Rectangle(x, y, frameWidth, frameHeight));
+        setResizable(false);
     }
 
     private void initMenu()
