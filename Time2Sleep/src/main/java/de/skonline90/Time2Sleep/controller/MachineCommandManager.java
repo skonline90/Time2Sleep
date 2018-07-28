@@ -9,7 +9,7 @@ import java.io.IOException;
  * @author skonline90
  * @version 28.07.18
  */
-public class MachineCommandManager
+public class MachineCommandManager 
 {
     private String osName;
 

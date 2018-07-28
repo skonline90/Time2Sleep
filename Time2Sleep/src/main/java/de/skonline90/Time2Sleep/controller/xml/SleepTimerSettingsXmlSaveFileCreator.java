@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * @author skonline90
  * @version 28.07.18
  */
-public class SleepTimerSettingsXmlSaveFileCreator
+public class SleepTimerSettingsXmlSaveFileCreator 
 {
     public static final String XML_ROOT_TAG_NAME = "Time2Sleep-Settings";
     public static final String XML_ACTION_SETTING_TAG_NAME = "Action-Setting";

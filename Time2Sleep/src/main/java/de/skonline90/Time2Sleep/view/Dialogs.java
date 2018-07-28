@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
  * @author skonline90
  * @version 28.07.18
  */
-final public class Dialogs
+final public class Dialogs 
 {
     public static int showZeroCountdownTimeDialog(Container parent)
     {

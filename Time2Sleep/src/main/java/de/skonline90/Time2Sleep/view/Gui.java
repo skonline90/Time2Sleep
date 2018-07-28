@@ -83,6 +83,7 @@ public final class Gui extends JFrame
 
     private TimerTask currentTimeTimerTask;
     private TimerTask countdownTimerTask;
+    private Timer countdownTimer;
     private long countDownSeconds;
     private MachineCommandManager machineCommandManager;
     private GuiStates guiState;
@@ -322,34 +323,40 @@ public final class Gui extends JFrame
     private void initLabels()
     {
         lblBigCountdown = new JLabel("00:00:00");
+        lblBigCountdown.setForeground(UiProperties.UI_TEXT_COLOR);
         lblBigCountdown.setHorizontalAlignment(SwingConstants.CENTER);
         lblBigCountdown.setFont(UiProperties.UI_COUNTDOWN_FONT);
         lblBigCountdown.setBounds(10, 38, 234, 89);
         getContentPane().add(lblBigCountdown);
 
         lblCurrentTimeText = new JLabel("Current Time");
+        lblCurrentTimeText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCurrentTimeText.setFont(UiProperties.UI_BASIC_TEXT_FONT);
         lblCurrentTimeText.setBounds(10, 219, 120, 20);
         getContentPane().add(lblCurrentTimeText);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(TIME_FORMAT);
         lblCurrentTimeValue = new JLabel(formatter.format(LocalTime.now()));
+        lblCurrentTimeValue.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCurrentTimeValue.setHorizontalAlignment(SwingConstants.RIGHT);
         lblCurrentTimeValue.setFont(UiProperties.UI_BASIC_TEXT_FONT);
         lblCurrentTimeValue.setBounds(140, 219, 104, 20);
         getContentPane().add(lblCurrentTimeValue);
 
         lblCountdownText = new JLabel("Countdown");
+        lblCountdownText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCountdownText.setFont(UiProperties.UI_BASIC_TEXT_FONT);
         lblCountdownText.setBounds(10, 188, 120, 20);
         getContentPane().add(lblCountdownText);
 
         lblActionText = new JLabel("Action Time");
+        lblActionText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblActionText.setFont(new Font("Tahoma", Font.PLAIN, 15));
         lblActionText.setBounds(10, 250, 120, 20);
         getContentPane().add(lblActionText);
 
         lblActionValue = new JLabel("20:24:01");
+        lblActionValue.setForeground(UiProperties.UI_TEXT_COLOR);
         lblActionValue.setHorizontalAlignment(SwingConstants.RIGHT);
         lblActionValue.setFont(new Font("Tahoma", Font.PLAIN, 15));
         lblActionValue.setBounds(140, 250, 104, 20);
@@ -478,6 +485,7 @@ public final class Gui extends JFrame
         setVisible(true);
         setTitle(GUI_TITLE + " " + GUI_VERSION);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        getContentPane().setBackground(UiProperties.UI_MENU_BG_COLOR);
     }
 
     // =============== END CONSTRUCTOR & INIT METHODS ===============
@@ -656,7 +664,7 @@ public final class Gui extends JFrame
                         .getSelectedItem()).toString()).toLowerCase();
                     try
                     {
-                        System.out.println(selectedSetting);
+                        cancelCountdownTimer();
                         machineCommandManager
                             .sendMachineCommand(selectedSetting);
                     }
@@ -668,7 +676,12 @@ public final class Gui extends JFrame
                 }
             }
         };
-        Timer countdownTimer = new Timer();
+        countdownTimer = new Timer();
         countdownTimer.schedule(countdownTimerTask, 0, 1000);
+    }
+
+    private void cancelCountdownTimer()
+    {
+        countdownTimer.cancel();
     }
 }

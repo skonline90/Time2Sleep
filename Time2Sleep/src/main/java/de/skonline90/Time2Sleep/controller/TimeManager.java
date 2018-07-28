@@ -12,7 +12,7 @@ import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
  * @author skonline90
  * @version 28.07.18
  */
-public class TimeManager
+public class TimeManager 
 {
     /**
      * Returns the current time as a string.

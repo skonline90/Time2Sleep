@@ -22,7 +22,7 @@ import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
  * @author skonline90
  * @version 28.07.18
  */
-public class XmlSettingsReader
+public class XmlSettingsReader 
 {
     /**
      * Reads the settings.xml file and returns its contents.

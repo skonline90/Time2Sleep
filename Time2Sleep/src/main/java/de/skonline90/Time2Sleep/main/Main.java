@@ -10,7 +10,7 @@ import de.skonline90.Time2Sleep.view.Gui;
  * @author skonline90
  * @version 28.07.18
  */
-public class Main
+public class Main 
 {
     public static void main(String[] args)
     {
