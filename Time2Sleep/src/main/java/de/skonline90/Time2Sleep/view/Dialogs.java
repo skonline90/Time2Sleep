@@ -30,4 +30,10 @@ final public class Dialogs
         JOptionPane.showMessageDialog(parent, "An IO Error occured.",
                 "IO Error", JOptionPane.ERROR_MESSAGE);
     }
+    
+    public static void showLoadSettingsError(Container parent)
+    {
+        JOptionPane.showMessageDialog(parent, "Couldn't load the default settings.",
+                "Default Settings Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

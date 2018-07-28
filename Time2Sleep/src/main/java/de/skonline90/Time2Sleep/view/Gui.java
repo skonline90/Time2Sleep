@@ -8,9 +8,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +20,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -40,6 +43,8 @@ import de.skonline90.Time2Sleep.controller.GuiStates;
 import de.skonline90.Time2Sleep.controller.MachineCommandManager;
 import de.skonline90.Time2Sleep.controller.TimeManager;
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
+import de.skonline90.Time2Sleep.controller.xml.SleepTimerSettingsXmlSaveFileCreator;
+import de.skonline90.Time2Sleep.controller.xml.XmlSettingsReader;
 
 public final class Gui extends JFrame
 {
@@ -88,6 +93,7 @@ public final class Gui extends JFrame
         initTextField();
         addActionListeners();
         initSpinner();
+        loadDefaultSettings();
         startCurrentTimeThread();
 
         machineCommandManager = new MachineCommandManager();
@@ -307,7 +313,7 @@ public final class Gui extends JFrame
         lblCountdownText.setBounds(10, 188, 120, 20);
         getContentPane().add(lblCountdownText);
 
-        lblActionText = new JLabel("Action");
+        lblActionText = new JLabel("Action Time");
         lblActionText.setFont(new Font("Tahoma", Font.PLAIN, 15));
         lblActionText.setBounds(10, 250, 120, 20);
         getContentPane().add(lblActionText);
@@ -350,6 +356,80 @@ public final class Gui extends JFrame
                 }
             }
         });
+    }
+
+    private void loadDefaultSettings()
+    {
+        File settingsFile = new File(
+                ApplicationProperties.SETTINGS_FILE_LOCATION);
+        if (settingsFile.exists() && !settingsFile.isDirectory())
+        {
+            List<String[]> defaultSettings;
+            try
+            {
+                defaultSettings = XmlSettingsReader.loadDefaultSettings();
+
+                String actionSetting = "default";
+                String incrementTime = "default";
+                String countdownTime = "default";
+
+                for (String[] setting : defaultSettings)
+                {
+                    if (setting[0].equals(
+                            SleepTimerSettingsXmlSaveFileCreator.XML_ACTION_SETTING_TAG_NAME))
+                        actionSetting = setting[1];
+                    if (setting[0].equals(
+                            SleepTimerSettingsXmlSaveFileCreator.XML_INCREMENT_TIME))
+                        incrementTime = setting[1];
+                    if (setting[0].equals(
+                            SleepTimerSettingsXmlSaveFileCreator.XML_COUNTDOWN_TIME_SETTING))
+                        countdownTime = setting[1];
+                }
+
+                if (actionSetting.equals("Shutdown"))
+                {
+                    cBoxSettingSelector.setSelectedIndex(0);
+                }
+                else if (actionSetting.equals("Sleep"))
+                {
+                    cBoxSettingSelector.setSelectedIndex(1);
+                }
+                else if (actionSetting.equals("Lock"))
+                {
+                    cBoxSettingSelector.setSelectedIndex(2);
+                }
+                else if (actionSetting.equals("Restart"))
+                {
+                    cBoxSettingSelector.setSelectedIndex(3);
+                }
+
+                DateTimeFormatter formatter = DateTimeFormatter
+                    .ofPattern(ApplicationProperties.TIME_FORMAT);
+                LocalDate now = LocalDate.now();
+                LocalTime incrementTimeValue = LocalTime.parse(incrementTime,
+                        formatter);
+                LocalTime countdownTimeValue = LocalTime.parse(countdownTime,
+                        formatter);
+
+                Instant instant = incrementTimeValue.atDate(now)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant();
+                Date incrementTimeValueAsDate = Date.from(instant);
+
+                instant = countdownTimeValue.atDate(now)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant();
+                Date countdownTimeValueAsDate = Date.from(instant);
+
+                txtFldAmount.setValue(incrementTimeValueAsDate);
+                spnTimeSelector.setValue(countdownTimeValueAsDate);
+            }
+            catch (Exception e)
+            {
+                Dialogs.showLoadSettingsError(this);
+                e.printStackTrace();
+            }
+        }
     }
 
     // =============== END CONSTRUCTOR & INIT METHODS ===============
@@ -420,10 +500,45 @@ public final class Gui extends JFrame
 
     private void close()
     {
+        saveSettings();
         currentTimeTimerTask.cancel();
         if (countDownSeconds > 0) countdownTimerTask.cancel();
         dispose();
         System.exit(0);
+    }
+
+    private void saveSettings()
+    {
+        try
+        {
+            String selectedActionSetting = (String) cBoxSettingSelector
+                .getSelectedItem();
+
+            DateTimeFormatter formatter = DateTimeFormatter
+                .ofPattern(ApplicationProperties.TIME_FORMAT);
+            Date incrementTime = (Date) txtFldAmount.getValue();
+            Instant instant = Instant.ofEpochMilli(incrementTime.getTime());
+            LocalTime time = LocalDateTime
+                .ofInstant(instant, ZoneId.systemDefault())
+                .toLocalTime();
+            String formattedIncrementTime = formatter.format(time);
+
+            Date countdownTime = (Date) spnTimeSelector.getValue();
+            instant = Instant.ofEpochMilli(countdownTime.getTime());
+            time = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+                .toLocalTime();
+            String formattedCountdownTime = formatter.format(time);
+
+            SleepTimerSettingsXmlSaveFileCreator creator = new SleepTimerSettingsXmlSaveFileCreator(
+                    selectedActionSetting, formattedIncrementTime,
+                    formattedCountdownTime);
+            creator
+                .exportToXmlFile(ApplicationProperties.SETTINGS_FILE_LOCATION);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private int getUserInputCountdownInSeconds()
