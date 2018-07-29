@@ -670,6 +670,10 @@ public final class Gui extends JFrame
                     try
                     {
                         cancelCountdownTimer();
+                        if (selectedSetting.equals("shutdown") || selectedSetting.equals("restart"))
+                        {
+                            saveSettings();
+                        }
                         machineCommandManager
                             .sendMachineCommand(selectedSetting);
                     }
