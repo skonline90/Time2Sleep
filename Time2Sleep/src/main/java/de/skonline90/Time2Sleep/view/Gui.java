@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -482,6 +483,10 @@ public final class Gui extends JFrame
      */
     private void setFrameProperties()
     {
+        ImageIcon appIcon = new ImageIcon(System.getProperty("user.dir")
+                + File.separator + "resources" + File.separator + "icons"
+                + File.separator + "moonIcon.png");
+        setIconImage(appIcon.getImage());
         setVisible(true);
         setTitle(GUI_TITLE + " " + GUI_VERSION);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
