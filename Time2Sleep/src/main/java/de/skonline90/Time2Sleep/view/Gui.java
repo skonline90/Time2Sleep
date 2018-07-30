@@ -24,6 +24,12 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,6 +40,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.SpinnerDateModel;
@@ -58,14 +65,18 @@ public final class Gui extends JFrame
     private static final long serialVersionUID = 1L;
 
     private static final String GUI_TITLE = "Time2Sleep";
-    private static final String GUI_VERSION = "1.0.0";
+    private static final String GUI_VERSION = "1.1.0";
     private static final String TIME_FORMAT = ApplicationProperties.TIME_FORMAT;
 
     private JComboBox<String> cBoxSettingSelector;
 
     private JMenuBar menuBar;
     private JMenu mnFile;
+    private JMenu mnAudio;
     private JMenuItem mnitmQuit;
+    private ButtonGroup btGrAudio;
+    private JRadioButtonMenuItem rmnitmNoice;
+    private JRadioButtonMenuItem rmnitmAlarm;
 
     private JLabel lblBigCountdown;
     private JLabel lblCurrentTimeText;
@@ -146,8 +157,21 @@ public final class Gui extends JFrame
         mnFile = new JMenu("File");
         menuBar.add(mnFile);
 
+        mnAudio = new JMenu("Audio");
+        menuBar.add(mnAudio);
+
         mnitmQuit = new JMenuItem("Quit");
         mnFile.add(mnitmQuit);
+
+        btGrAudio = new ButtonGroup();
+        rmnitmAlarm = new JRadioButtonMenuItem("Alarm");
+        rmnitmAlarm.setSelected(true);
+        btGrAudio.add(rmnitmAlarm);
+        mnAudio.add(rmnitmAlarm);
+
+        rmnitmNoice = new JRadioButtonMenuItem("Noice");
+        btGrAudio.add(rmnitmNoice);
+        mnAudio.add(rmnitmNoice);
     }
 
     /**
@@ -156,7 +180,7 @@ public final class Gui extends JFrame
     private void initComboBox()
     {
         final String[] cboxItems = new String[] {"Shutdown", "Sleep", "Lock",
-                "Restart"};
+                "Restart", "Alarm"};
 
         cBoxSettingSelector = new JComboBox<String>();
         cBoxSettingSelector.setBounds(10, 11, 234, 20);
@@ -418,6 +442,7 @@ public final class Gui extends JFrame
                 String actionSetting = "default";
                 String incrementTime = "default";
                 String countdownTime = "default";
+                String audioSetting = "default";
 
                 for (String[] setting : defaultSettings)
                 {
@@ -430,6 +455,9 @@ public final class Gui extends JFrame
                     if (setting[0].equals(
                             SleepTimerSettingsXmlSaveFileCreator.XML_COUNTDOWN_TIME_SETTING))
                         countdownTime = setting[1];
+                    if (setting[0].equals(
+                            SleepTimerSettingsXmlSaveFileCreator.XML_SELECTED_AUDIO))
+                        audioSetting = setting[1].toLowerCase();
                 }
 
                 if (actionSetting.equals("Shutdown"))
@@ -447,6 +475,10 @@ public final class Gui extends JFrame
                 else if (actionSetting.equals("Restart"))
                 {
                     cBoxSettingSelector.setSelectedIndex(3);
+                }
+                else if (actionSetting.equals("Alarm"))
+                {
+                    cBoxSettingSelector.setSelectedIndex(4);
                 }
 
                 DateTimeFormatter formatter = DateTimeFormatter
@@ -469,6 +501,15 @@ public final class Gui extends JFrame
 
                 txtFldAmount.setValue(incrementTimeValueAsDate);
                 spnTimeSelector.setValue(countdownTimeValueAsDate);
+
+                if (audioSetting.equals("alarm"))
+                {
+                    rmnitmAlarm.setSelected(true);
+                }
+                else if (audioSetting.equals("noice"))
+                {
+                    rmnitmNoice.setSelected(true);
+                }
             }
             catch (Exception e)
             {
@@ -597,9 +638,20 @@ public final class Gui extends JFrame
                 .toLocalTime();
             String formattedCountdownTime = formatter.format(time);
 
+            String selectedAudioSetting = null;
+            if (btGrAudio.getSelection()
+                .equals(rmnitmAlarm.getModel()))
+            {
+                selectedAudioSetting = "Alarm";
+            }
+            else
+            {
+                selectedAudioSetting = "Noice";
+            }
+
             SleepTimerSettingsXmlSaveFileCreator creator = new SleepTimerSettingsXmlSaveFileCreator(
                     selectedActionSetting, formattedIncrementTime,
-                    formattedCountdownTime);
+                    formattedCountdownTime, selectedAudioSetting);
             creator
                 .exportToXmlFile(ApplicationProperties.SETTINGS_FILE_LOCATION);
         }
@@ -666,20 +718,56 @@ public final class Gui extends JFrame
                     lblBigCountdown.setText(setCountdownTimer(0));
                     countdownTimerTask.cancel();
                     String selectedSetting = ((cBoxSettingSelector
-                        .getSelectedItem()).toString()).toLowerCase();
+                        .getSelectedItem()).toString());
                     try
                     {
+                        saveSettings();
                         cancelCountdownTimer();
-                        if (selectedSetting.equals("shutdown") || selectedSetting.equals("restart"))
+                        if (selectedSetting.equals("Shutdown")
+                                || selectedSetting.equals("Restart"))
                         {
-                            saveSettings();
+                            machineCommandManager
+                                .sendMachineCommand(selectedSetting);
                         }
-                        machineCommandManager
-                            .sendMachineCommand(selectedSetting);
+                        else if (selectedSetting.equals("Alarm"))
+                        {
+                            System.out.println("Alarm lets go");
+                            String audioDir = System.getProperty("user.dir")
+                                    + File.separator + "resources"
+                                    + File.separator + "sounds"
+                                    + File.separator;
+                            String selectedAudioSetting = null;
+                            if (btGrAudio.getSelection()
+                                .equals(rmnitmAlarm.getModel()))
+                            {
+                                selectedAudioSetting = "alarm";
+                            }
+                            else
+                            {
+                                selectedAudioSetting = "noice";
+                            }
+                            AudioInputStream audioInputStream = AudioSystem
+                                .getAudioInputStream(
+                                        new File(audioDir + selectedAudioSetting
+                                                + ".wav").getAbsoluteFile());
+                            Clip clip = AudioSystem.getClip();
+                            clip.open(audioInputStream);
+                            clip.start();
+                        }
                     }
                     catch (IOException e)
                     {
                         Dialogs.showIoErrorDialog(gui);
+                        e.printStackTrace();
+                    }
+                    catch (UnsupportedAudioFileException e)
+                    {
+                        Dialogs.showAudioFileError(gui);
+                        e.printStackTrace();
+                    }
+                    catch (LineUnavailableException e)
+                    {
+                        Dialogs.showAudioFileError(gui);
                         e.printStackTrace();
                     }
                 }

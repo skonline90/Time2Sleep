@@ -34,4 +34,10 @@ final public class Dialogs
         JOptionPane.showMessageDialog(parent, "Couldn't load the default settings.",
                 "Default Settings Error", JOptionPane.ERROR_MESSAGE);
     }
+    
+    public static void showAudioFileError(Container parent)
+    {
+        JOptionPane.showMessageDialog(parent, "Couldn't load the audio file.",
+                "Audio File Error", JOptionPane.ERROR_MESSAGE);
+    }
 }

@@ -46,7 +46,8 @@ public class XmlSettingsReader
         String[] tagNames = {
                 SleepTimerSettingsXmlSaveFileCreator.XML_ACTION_SETTING_TAG_NAME,
                 SleepTimerSettingsXmlSaveFileCreator.XML_INCREMENT_TIME,
-                SleepTimerSettingsXmlSaveFileCreator.XML_COUNTDOWN_TIME_SETTING};
+                SleepTimerSettingsXmlSaveFileCreator.XML_COUNTDOWN_TIME_SETTING,
+                SleepTimerSettingsXmlSaveFileCreator.XML_SELECTED_AUDIO};
         NodeList nodes;
         for (int i = 0; i < tagNames.length; i++)
         {

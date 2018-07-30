@@ -24,15 +24,17 @@ import org.w3c.dom.Element;
  * @author skonline90
  * @version 28.07.18
  */
-public class SleepTimerSettingsXmlSaveFileCreator 
+public class SleepTimerSettingsXmlSaveFileCreator
 {
     public static final String XML_ROOT_TAG_NAME = "Time2Sleep-Settings";
     public static final String XML_ACTION_SETTING_TAG_NAME = "Action-Setting";
     public static final String XML_INCREMENT_TIME = "IncrementTime";
     public static final String XML_COUNTDOWN_TIME_SETTING = "CountdownTime";
+    public static final String XML_SELECTED_AUDIO = "Selected-Audio";
 
     private Document doc;
-    private Element root, actionSetting, incrementTime, countdownTime;
+    private Element root, actionSetting, incrementTime, countdownTime,
+            selectedAudio;
 
     /**
      * Constructor.
@@ -41,8 +43,8 @@ public class SleepTimerSettingsXmlSaveFileCreator
      * be created.
      */
     public SleepTimerSettingsXmlSaveFileCreator(String actionSetting,
-            String formattedIncrementTime, String formattedCountdownTime)
-            throws ParserConfigurationException
+            String formattedIncrementTime, String formattedCountdownTime,
+            String audioSelected) throws ParserConfigurationException
     {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory
             .newInstance();
@@ -52,17 +54,20 @@ public class SleepTimerSettingsXmlSaveFileCreator
         this.actionSetting = doc.createElement(XML_ACTION_SETTING_TAG_NAME);
         this.incrementTime = doc.createElement(XML_INCREMENT_TIME);
         this.countdownTime = doc.createElement(XML_COUNTDOWN_TIME_SETTING);
+        this.selectedAudio = doc.createElement(XML_SELECTED_AUDIO);
 
         this.actionSetting.appendChild(doc.createTextNode(actionSetting));
         this.incrementTime
             .appendChild(doc.createTextNode(formattedIncrementTime));
         this.countdownTime
             .appendChild(doc.createTextNode(formattedCountdownTime));
+        this.selectedAudio.appendChild(doc.createTextNode(audioSelected));
 
         root = createRootElement(XML_ROOT_TAG_NAME, null, null);
         root.appendChild(this.actionSetting);
         root.appendChild(this.incrementTime);
         root.appendChild(this.countdownTime);
+        root.appendChild(this.selectedAudio);
     }
 
     /**

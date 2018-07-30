@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Time2Sleep-Settings>
+  <Action-Setting>Alarm</Action-Setting>
+  <IncrementTime>00:05:00</IncrementTime>
+  <CountdownTime>00:00:10</CountdownTime>
+  <Selected-Audio>Noice</Selected-Audio>
+</Time2Sleep-Settings>
