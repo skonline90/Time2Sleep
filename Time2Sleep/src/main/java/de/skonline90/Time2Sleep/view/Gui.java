@@ -718,20 +718,22 @@ public final class Gui extends JFrame
                     lblBigCountdown.setText(setCountdownTimer(0));
                     countdownTimerTask.cancel();
                     String selectedSetting = ((cBoxSettingSelector
-                        .getSelectedItem()).toString());
+                        .getSelectedItem()).toString()
+                            .toLowerCase());
                     try
                     {
                         saveSettings();
                         cancelCountdownTimer();
-                        if (selectedSetting.equals("Shutdown")
-                                || selectedSetting.equals("Restart"))
+                        if (selectedSetting.equals("shutdown")
+                                || selectedSetting.equals("restart")
+                                || selectedSetting.equals("lock")
+                                || selectedSetting.equals("sleep"))
                         {
                             machineCommandManager
                                 .sendMachineCommand(selectedSetting);
                         }
-                        else if (selectedSetting.equals("Alarm"))
+                        else if (selectedSetting.equals("alarm"))
                         {
-                            System.out.println("Alarm lets go");
                             String audioDir = System.getProperty("user.dir")
                                     + File.separator + "resources"
                                     + File.separator + "sounds"
