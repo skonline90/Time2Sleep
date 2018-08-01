@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -43,6 +44,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.DateEditor;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
 import javax.swing.text.DateFormatter;
@@ -53,6 +57,7 @@ import de.skonline90.Time2Sleep.controller.TimeManager;
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 import de.skonline90.Time2Sleep.controller.xml.SleepTimerSettingsXmlSaveFileCreator;
 import de.skonline90.Time2Sleep.controller.xml.XmlSettingsReader;
+import javax.swing.JSlider;
 
 /**
  * The main application window.
@@ -92,6 +97,7 @@ public final class Gui extends JFrame
 
     private JSpinner spnTimeSelector;
     private JFormattedTextField txtFldAmount;
+    private JSlider slider;
 
     private TimerTask currentTimeTimerTask;
     private TimerTask countdownTimerTask;
@@ -114,6 +120,7 @@ public final class Gui extends JFrame
         initLabels();
         initButtons();
         initTextField();
+        initSlider();
         addActionListeners();
         initSpinner();
         loadDefaultSettings();
@@ -134,8 +141,8 @@ public final class Gui extends JFrame
         getContentPane().setLayout(null);
 
         // Centers the Frame
-        int frameWidth = 267;
-        int frameHeight = 410;
+        int frameWidth = 260;
+        int frameHeight = 450;
         Dimension screenSize = Toolkit.getDefaultToolkit()
             .getScreenSize();
         int screenWidth = (int) Math.round(screenSize.getWidth());
@@ -197,11 +204,11 @@ public final class Gui extends JFrame
     private void initButtons()
     {
         btnAbort = new JButton("Abort");
-        btnAbort.setBounds(87, 319, 76, 23);
+        btnAbort.setBounds(87, 369, 76, 23);
         getContentPane().add(btnAbort);
 
         btnStart = new JButton("Start");
-        btnStart.setBounds(171, 319, 76, 23);
+        btnStart.setBounds(171, 369, 76, 23);
         getContentPane().add(btnStart);
 
         btnPlus = new JButton("+");
@@ -226,12 +233,43 @@ public final class Gui extends JFrame
         txtFldAmount.setHorizontalAlignment(SwingConstants.CENTER);
         getContentPane().add(txtFldAmount);
         LocalDateTime now = LocalDateTime.of(LocalDate.now(),
-                LocalTime.of(0, 5, 0));
+                LocalTime.of(0, 10, 0));
         ZonedDateTime atZone = now.atZone(ZoneId.systemDefault());
         Date date = Date.from(atZone.toInstant());
         txtFldAmount.setValue(date);
+        txtFldAmount.setEditable(false);
 
         txtFldAmount.setColumns(10);
+    }
+
+    private void initSlider()
+    {
+        slider = new JSlider(0, 100, 0);
+        slider.setBounds(10, 177, 231, 26);
+        slider.setBackground(UiProperties.UI_BG_COLOR);
+        getContentPane().add(slider);
+
+        slider.addChangeListener(new ChangeListener()
+        {
+            @Override
+            public void stateChanged(ChangeEvent e)
+            {
+                double value = (double) slider.getValue();
+                // 1200 refers to the maximum amount of seconds
+                int seconds = (int) Math.round(((value / 100) * 1190) + 10);
+                int hours = seconds / 3600;
+                seconds = seconds % 3600;
+                int minutes = seconds / 60;
+                seconds = seconds % 60;
+
+                LocalDateTime now = LocalDateTime.of(LocalDate.now(),
+                        LocalTime.of(hours, minutes, seconds));
+                ZonedDateTime atZone = now.atZone(ZoneId.systemDefault());
+                Date date = Date.from(atZone.toInstant());
+
+                txtFldAmount.setValue(date);
+            }
+        });
     }
 
     /**
@@ -357,7 +395,7 @@ public final class Gui extends JFrame
         lblCurrentTimeText = new JLabel("Current Time");
         lblCurrentTimeText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCurrentTimeText.setFont(UiProperties.UI_BASIC_TEXT_FONT);
-        lblCurrentTimeText.setBounds(10, 219, 120, 20);
+        lblCurrentTimeText.setBounds(10, 269, 120, 20);
         getContentPane().add(lblCurrentTimeText);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(TIME_FORMAT);
@@ -365,26 +403,26 @@ public final class Gui extends JFrame
         lblCurrentTimeValue.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCurrentTimeValue.setHorizontalAlignment(SwingConstants.RIGHT);
         lblCurrentTimeValue.setFont(UiProperties.UI_BASIC_TEXT_FONT);
-        lblCurrentTimeValue.setBounds(140, 219, 104, 20);
+        lblCurrentTimeValue.setBounds(140, 269, 104, 20);
         getContentPane().add(lblCurrentTimeValue);
 
         lblCountdownText = new JLabel("Countdown");
         lblCountdownText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblCountdownText.setFont(UiProperties.UI_BASIC_TEXT_FONT);
-        lblCountdownText.setBounds(10, 188, 120, 20);
+        lblCountdownText.setBounds(10, 238, 120, 20);
         getContentPane().add(lblCountdownText);
 
         lblActionText = new JLabel("Action Time");
         lblActionText.setForeground(UiProperties.UI_TEXT_COLOR);
         lblActionText.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        lblActionText.setBounds(10, 250, 120, 20);
+        lblActionText.setBounds(10, 300, 120, 20);
         getContentPane().add(lblActionText);
 
         lblActionValue = new JLabel("20:24:01");
         lblActionValue.setForeground(UiProperties.UI_TEXT_COLOR);
         lblActionValue.setHorizontalAlignment(SwingConstants.RIGHT);
         lblActionValue.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        lblActionValue.setBounds(140, 250, 104, 20);
+        lblActionValue.setBounds(140, 300, 104, 20);
         getContentPane().add(lblActionValue);
     }
 
@@ -396,7 +434,7 @@ public final class Gui extends JFrame
         SpinnerDateModel spinnerModel = new SpinnerDateModel();
 
         spnTimeSelector = new JSpinner();
-        spnTimeSelector.setBounds(140, 188, 104, 20);
+        spnTimeSelector.setBounds(140, 238, 104, 20);
         spnTimeSelector.setModel(spinnerModel);
         getContentPane().add(spnTimeSelector);
 
@@ -410,16 +448,29 @@ public final class Gui extends JFrame
         Date date = new Date(-60 * 60 * 1000);
         spnTimeSelector.setValue(date);
 
-        spnTimeSelector.addKeyListener(new KeyAdapter()
+        JTextField spinnerTextField = ((JSpinner.DefaultEditor) spnTimeSelector
+            .getEditor()).getTextField();
+        spinnerTextField.setToolTipText(
+                "Enter the countdown time. Pressing 'Return' Key will start the countdown.");
+        spinnerTextField.addKeyListener(new KeyListener()
         {
             @Override
             public void keyReleased(final KeyEvent e)
             {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER)
                 {
-                    System.out.println("Enter");
                     btnStart.doClick();
                 }
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e)
+            {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
             }
         });
     }
@@ -501,6 +552,16 @@ public final class Gui extends JFrame
 
                 txtFldAmount.setValue(incrementTimeValueAsDate);
                 spnTimeSelector.setValue(countdownTimeValueAsDate);
+
+                //                System.out.println(incrementTimeValue.getHour() + " " + incrementTimeValue.getMinute() + " " + incrementTimeValue.getSecond());
+                //                System.out.println((incrementTimeValue.getHour() * 3600
+                //                        + incrementTimeValue.getMinute() * 60
+                //                        + incrementTimeValue.getSecond()) / 1200);
+
+                double partialSeconds = ((double) (incrementTimeValue.getHour()
+                        * 3600 + incrementTimeValue.getMinute() * 60
+                        + incrementTimeValue.getSecond())) / 1200;
+                slider.setValue((int) Math.round(partialSeconds * 100));
 
                 if (audioSetting.equals("alarm"))
                 {
