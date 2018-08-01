@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Time2Sleep-Settings>
   <Action-Setting>Alarm</Action-Setting>
-  <IncrementTime>00:08:42</IncrementTime>
+  <IncrementTime>00:20:00</IncrementTime>
   <CountdownTime>01:00:00</CountdownTime>
   <Selected-Audio>Alarm</Selected-Audio>
 </Time2Sleep-Settings>
