@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -42,13 +41,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JSpinner.DateEditor;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.DateFormatter;
 
 import de.skonline90.Time2Sleep.controller.GuiStates;
@@ -57,7 +57,6 @@ import de.skonline90.Time2Sleep.controller.TimeManager;
 import de.skonline90.Time2Sleep.controller.properties.ApplicationProperties;
 import de.skonline90.Time2Sleep.controller.xml.SleepTimerSettingsXmlSaveFileCreator;
 import de.skonline90.Time2Sleep.controller.xml.XmlSettingsReader;
-import javax.swing.JSlider;
 
 /**
  * The main application window.
@@ -659,7 +658,7 @@ public final class Gui extends JFrame
             }
         };
         Timer timer = new Timer();
-        timer.schedule(currentTimeTimerTask, 0, 1000);
+        timer.schedule(currentTimeTimerTask, 0, 100);
     }
 
     /**
