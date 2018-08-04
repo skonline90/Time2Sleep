@@ -140,8 +140,8 @@ public final class Gui extends JFrame
         getContentPane().setLayout(null);
 
         // Centers the Frame
-        int frameWidth = 260;
-        int frameHeight = 450;
+        int frameWidth = 270;
+        int frameHeight = 460;
         Dimension screenSize = Toolkit.getDefaultToolkit()
             .getScreenSize();
         int screenWidth = (int) Math.round(screenSize.getWidth());
