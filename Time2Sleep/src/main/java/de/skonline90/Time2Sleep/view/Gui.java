@@ -69,7 +69,7 @@ public final class Gui extends JFrame
     private static final long serialVersionUID = 1L;
 
     private static final String GUI_TITLE = "Time2Sleep";
-    private static final String GUI_VERSION = "v1.1.1";
+    private static final String GUI_VERSION = "v1.2.1";
     private static final String TIME_FORMAT = ApplicationProperties.TIME_FORMAT;
 
     private JComboBox<String> cBoxSettingSelector;
